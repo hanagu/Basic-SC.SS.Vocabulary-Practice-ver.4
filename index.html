@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Academic Vocabulary Practice</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body { font-family: 'Georgia', serif; background-color: #f8fafc; color: #0f172a; }
+    h1, h2, h3, h4 { font-family: 'Georgia', serif; }
+    .academic-input {
+      border: none;
+      border-bottom: 2px solid #94a3b8;
+      background-color: transparent;
+      outline: none;
+      font-weight: bold;
+      color: #1e40af;
+      padding: 2px 8px;
+      margin: 0 4px;
+      transition: all 0.2s;
+      font-family: sans-serif;
+      text-align: center;
+    }
+    .academic-input:focus {
+      border-bottom-color: #2563eb;
+      background-color: #eff6ff;
+    }
+    .academic-input:disabled {
+      background-color: transparent;
+    }
+    .correct-text { color: #166534; border-bottom-color: #16a34a !important; }
+    .incorrect-text { color: #991b1b; border-bottom-color: #dc2626 !important; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const quizData = [
+      {
+        groupId: 1,
+        wordBank: ["investigate", "survey", "research", "record", "collect", "evidence", "data", "result", "conclusion", "reason", "source", "explain", "predict", "refer to", "define", "cause"].sort(),
+        part1: {
+          desc: "Group the selected words into Doing Research vs. Findings & Information.",
+          testWords: ["investigate", "survey", "collect", "data", "result", "conclusion"],
+          catA: { name: "Doing Research (Actions)", words: ["investigate", "survey", "collect"] },
+          catB: { name: "Findings & Info (Nouns)", words: ["data", "result", "conclusion"] }
+        },
+        part2: [
+          { q: "A tiny virus is the ", bold: "effect", text2: " of your cold.", ansTF: 'F', fixOptions: ['cause', 'reason'] },
+          { q: "You must ", bold: "collect", text2: " rock samples to study them in the lab.", ansTF: 'T', fixOptions: [] },
+          { q: "When you tell exactly what a word means, you ", bold: "investigate", text2: " it.", ansTF: 'F', fixOptions: ['define', 'explain'] },
+          { q: "Always check your ", bold: "source", text2: " to make sure the information is true.", ansTF: 'T', fixOptions: [] }
+        ],
+        part3: [
+          { q: "Guess is to Predict AS Look into is to", ans: "investigate" },
+          { q: "Numbers are to Data AS Proof is to", ans: "evidence" },
+          { q: "Write down is to Record AS Ask people is to", ans: "survey" },
+          { q: "Start is to Cause AS End is to", ans: "result" },
+          { q: "Describe is to Explain AS Find meaning is to", ans: "define" }
+        ],
+        part4: {
+          textParts: [
+            "The scientists will ",
+            " the strange glowing rocks. They will ",
+            " samples to study in their lab. Their final ",
+            " will be published in a famous science book next year."
+          ],
+          wrongWords: ["explain", "predict", "survey"],
+          answers: ["investigate", "collect", "conclusion"]
+        }
+      },
+      {
+        groupId: 2,
+        wordBank: ["effect", "affect", "impact", "influence", "structure", "environment", "observe", "notice", "describe", "compare", "contrast", "classify", "identify", "process", "experiment", "conduct"].sort(),
+        part1: {
+          desc: "Group the selected words into Observing & Doing vs. Concepts & Things.",
+          testWords: ["observe", "classify", "conduct", "effect", "structure", "environment"],
+          catA: { name: "Observing & Doing", words: ["observe", "classify", "conduct"] },
+          catB: { name: "Concepts & Things", words: ["effect", "structure", "environment"] }
+        },
+        part2: [
+          { q: "You ", bold: "contrast", text2: " two things to see how they are the same.", ansTF: 'F', fixOptions: ['compare'] },
+          { q: "Plastic pollution has a terrible ", bold: "impact", text2: " on the ocean.", ansTF: 'T', fixOptions: [] },
+          { q: "To group animals by their types (like mammals or birds) is to ", bold: "observe", text2: " them.", ansTF: 'F', fixOptions: ['classify'] },
+          { q: "A butterfly goes through a long ", bold: "process", text2: " to grow its wings.", ansTF: 'T', fixOptions: [] }
+        ],
+        part3: [
+          { q: "Look is to Observe AS See clearly is to", ans: "notice" },
+          { q: "Same is to Compare AS Different is to", ans: "contrast" },
+          { q: "Action is to Conduct AS Science test is to", ans: "experiment" },
+          { q: "Nature is to Environment AS Building shape is to", ans: "structure" },
+          { q: "Tell about is to Describe AS Name it is to", ans: "identify" }
+        ],
+        part4: {
+          textParts: [
+            "We went outside to ",
+            " the birds in the park. We wanted to ",
+            " the different bird species. The dirty water will definitely ",
+            " their delicate home."
+          ],
+          wrongWords: ["conduct", "compare", "structure"],
+          answers: ["observe", "identify", "affect"]
+        }
+      },
+      {
+        groupId: 3,
+        wordBank: ["measure", "element", "factor", "relationship", "increase", "decrease", "similar", "different", "communication", "representation", "chart", "graph", "diagram", "model", "demonstrate", "summarize"].sort(),
+        part1: {
+          desc: "Group the selected words into Math & Visuals vs. Comparing & Explaining.",
+          testWords: ["measure", "increase", "graph", "similar", "relationship", "summarize"],
+          catA: { name: "Math & Visual Tools", words: ["measure", "increase", "graph"] },
+          catB: { name: "Comparing & Explaining", words: ["similar", "relationship", "summarize"] }
+        },
+        part2: [
+          { q: "If the temperature gets hotter, the thermometer line will ", bold: "decrease", text2: ".", ansTF: 'F', fixOptions: ['increase'] },
+          { q: "A pie ", bold: "chart", text2: " shows how big different parts of a whole are.", ansTF: 'T', fixOptions: [] },
+          { q: "To tell a short version of a long story is to ", bold: "measure", text2: " it.", ansTF: 'F', fixOptions: ['summarize'] },
+          { q: "A wolf and a domestic dog are very ", bold: "similar", text2: " animals.", ansTF: 'T', fixOptions: [] }
+        ],
+        part3: [
+          { q: "Down is to Decrease AS Up is to", ans: "increase" },
+          { q: "Talk is to Communication AS Show is to", ans: "demonstrate" },
+          { q: "Drawing is to Diagram AS 3D object is to", ans: "model" },
+          { q: "Part is to Element AS Connection is to", ans: "relationship" },
+          { q: "Opposite is to Different AS Alike is to", ans: "similar" }
+        ],
+        part4: {
+          textParts: [
+            "The teacher drew a line ",
+            " on the whiteboard. It showed a huge ",
+            " in the plant's height over time. We had to ",
+            " the results in one short sentence."
+          ],
+          wrongWords: ["model", "decrease", "measure"],
+          answers: ["graph", "increase", "summarize"] // chart is also acceptable for graph
+        }
+      },
+      {
+        groupId: 4,
+        wordBank: ["infer", "characteristic", "feature", "property", "function", "variety", "analyze", "examine", "evaluate", "represent", "organize", "period", "region", "system", "quantity", "quality", "amount"].sort(),
+        part1: {
+          desc: "Group the selected words into Thinking & Organizing vs. Features & Amounts.",
+          testWords: ["analyze", "evaluate", "organize", "feature", "period", "quantity"],
+          catA: { name: "Thinking & Organizing", words: ["analyze", "evaluate", "organize"] },
+          catB: { name: "Features & Amounts", words: ["feature", "period", "quantity"] }
+        },
+        part2: [
+          { q: "You ", bold: "evaluate", text2: " your project to see how good it is.", ansTF: 'T', fixOptions: [] },
+          { q: "A desert is a very hot and dry ", bold: "period", text2: ".", ansTF: 'F', fixOptions: ['region'] },
+          { q: "The main ", bold: "function", text2: " of the heart is to pump blood.", ansTF: 'T', fixOptions: [] },
+          { q: "A huge ", bold: "quality", text2: " of water is needed to fill the swimming pool.", ansTF: 'F', fixOptions: ['quantity', 'amount'] }
+        ],
+        part3: [
+          { q: "Time is to Period AS Place is to", ans: "region" },
+          { q: "Look closely is to Examine AS Sort things is to", ans: "organize" },
+          { q: "Goodness is to Quality AS How many is to", ans: "quantity" },
+          { q: "Job is to Function AS Special part is to", ans: "feature" },
+          { q: "One kind is to Same AS Many kinds is to", ans: "variety" }
+        ],
+        part4: {
+          textParts: [
+            "We need to carefully ",
+            " the rocks we found. Each rock has a unique physical ",
+            " like color and weight. We will group them by their total ",
+            "."
+          ],
+          wrongWords: ["organize", "period", "evaluate"],
+          answers: ["analyze", "property", "amount"] // characteristic/feature acceptable for property; quantity acceptable for amount
+        }
+      }
+    ];
+
+    function App() {
+      const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
+      const [isSubmitted, setIsSubmitted] = useState(false);
+      const [score, setScore] = useState({ correct: 0, total: 0 });
+      const topRef = useRef(null);
+
+      const groupData = quizData[currentGroupIndex];
+      const totalWords = groupData.wordBank.length;
+
+      // --- Answer States ---
+      const [p1Answers, setP1Answers] = useState({});
+      const [p2Answers, setP2Answers] = useState([
+        { tf: null, fix: '' }, { tf: null, fix: '' }, { tf: null, fix: '' }, { tf: null, fix: '' }
+      ]);
+      const [p3Answers, setP3Answers] = useState(['', '', '', '', '']);
+      const [p4Answers, setP4Answers] = useState(['', '', '']);
+
+      // Calculate total questions dynamically
+      const totalQuestions = groupData.part1.testWords.length + groupData.part2.length + groupData.part3.length + groupData.part4.answers.length;
+
+      useEffect(() => {
+        // Reset all states when group changes
+        setIsSubmitted(false);
+        setP1Answers({});
+        setP2Answers([{ tf: null, fix: '' }, { tf: null, fix: '' }, { tf: null, fix: '' }, { tf: null, fix: '' }]);
+        setP3Answers(['', '', '', '', '']);
+        setP4Answers(['', '', '']);
+        setScore({ correct: 0, total: totalQuestions });
+        if(topRef.current) topRef.current.scrollIntoView({ behavior: 'smooth' });
+      }, [currentGroupIndex, totalQuestions]);
+
+      const checkAnswers = () => {
+        let currentCorrect = 0;
+
+        // Check Part 1
+        groupData.part1.testWords.forEach(w => {
+          const correctCat = groupData.part1.catA.words.includes(w) ? 'A' : 'B';
+          if (p1Answers[w] === correctCat) currentCorrect++;
+        });
+
+        // Check Part 2
+        p2Answers.forEach((ans, idx) => {
+          const q = groupData.part2[idx];
+          if (q.ansTF === 'T') {
+            if (ans.tf === 'T') currentCorrect++;
+          } else {
+            const userFix = ans.fix.trim().toLowerCase();
+            if (ans.tf === 'F' && q.fixOptions.includes(userFix)) {
+              currentCorrect++;
+            }
+          }
+        });
+
+        // Check Part 3
+        p3Answers.forEach((ans, idx) => {
+          if (ans.trim().toLowerCase() === groupData.part3[idx].ans) currentCorrect++;
+        });
+
+        // Check Part 4
+        p4Answers.forEach((ans, idx) => {
+          const userAns = ans.trim().toLowerCase();
+          const correctAns = groupData.part4.answers[idx];
+          // Allow some synonyms for flexibility in grading
+          const accepted = [correctAns];
+          if (correctAns === "graph") accepted.push("chart");
+          if (correctAns === "amount") accepted.push("quantity");
+          if (correctAns === "property") accepted.push("feature", "characteristic");
+          if (correctAns === "affect") accepted.push("impact", "influence");
+          if (correctAns === "examine") accepted.push("analyze");
+          
+          if (accepted.includes(userAns)) currentCorrect++;
+        });
+
+        setScore({ correct: currentCorrect, total: totalQuestions });
+        setIsSubmitted(true);
+        if(topRef.current) topRef.current.scrollIntoView({ behavior: 'smooth' });
+      };
+
+      const handleNextGroup = () => {
+        if (currentGroupIndex < quizData.length - 1) {
+          setCurrentGroupIndex(prev => prev + 1);
+        } else {
+          // Finished all groups
+          alert("Outstanding! You have completed all 4 Academic Vocabulary Groups!");
+          setCurrentGroupIndex(0);
+        }
+      };
+
+      return (
+        <div className="max-w-5xl mx-auto p-4 sm:p-8" ref={topRef}>
+          
+          {/* Header */}
+          <div className="bg-slate-900 text-white p-8 rounded-t-xl shadow-lg border-b-4 border-slate-600">
+            <div className="flex justify-between items-center mb-4">
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-wide">Academic Vocabulary</h1>
+              <span className="bg-indigo-600 px-4 py-2 rounded-full font-sans font-bold text-sm tracking-widest shadow-inner">
+                GROUP {groupData.groupId} / 4
+              </span>
+            </div>
+            <p className="text-slate-300 text-lg font-sans">Complete Parts 1 to 4 using the Global Word Bank below.</p>
+            
+            {isSubmitted && (
+              <div className="mt-6 p-5 bg-white/10 rounded-lg border border-white/20 flex items-center justify-between animate-pulse">
+                <span className="text-xl font-bold">Group {groupData.groupId} Score:</span>
+                <span className={`text-3xl font-extrabold ${score.correct === score.total ? 'text-green-400' : 'text-yellow-400'}`}>
+                  {score.correct} / {score.total}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white shadow-xl p-6 sm:p-10 rounded-b-xl border border-slate-200">
+            
+            {/* GLOBAL WORD BANK */}
+            <div className="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-6 mb-12 shadow-sm relative">
+              <div className="absolute -top-3 left-6 bg-indigo-600 text-white px-4 py-1 rounded font-sans font-bold text-xs uppercase tracking-widest">
+                Global Word Bank
+              </div>
+              <div className="flex flex-wrap justify-center gap-3 mt-2 font-sans">
+                {groupData.wordBank.map((word, idx) => (
+                  <span key={idx} className="bg-white px-4 py-2 rounded-lg font-semibold text-indigo-900 border border-indigo-100 shadow-sm text-lg">
+                    {word}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* PART 1 */}
+            <section className="mb-14">
+              <h2 className="text-2xl font-bold text-slate-800 border-b-2 border-slate-200 pb-2 mb-4 flex items-center gap-2">
+                <span className="bg-slate-800 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm">1</span> 
+                Concept Categorization
+              </h2>
+              <p className="text-slate-600 italic mb-6 font-sans">
+                Directions: {groupData.part1.desc}
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Category A */}
+                <div className="bg-blue-50/50 p-6 rounded-xl border border-blue-200 shadow-inner">
+                  <h3 className="font-bold text-blue-900 mb-6 text-center text-xl">{groupData.part1.catA.name}</h3>
+                  <div className="flex flex-col gap-3 font-sans">
+                    {groupData.part1.testWords.map(word => {
+                      const isCorrect = isSubmitted && p1Answers[word] === 'A' && groupData.part1.catA.words.includes(word);
+                      const isWrong = isSubmitted && p1Answers[word] === 'A' && !groupData.part1.catA.words.includes(word);
+                      return (
+                        <div key={word + 'A'} className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm border border-slate-100">
+                          <span className="font-semibold text-slate-700 text-lg">{word}</span>
+                          <button 
+                            disabled={isSubmitted}
+                            onClick={() => setP1Answers({...p1Answers, [word]: 'A'})}
+                            className={`px-5 py-2 rounded font-bold transition ${p1Answers[word] === 'A' ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'} ${isWrong ? 'ring-2 ring-red-500 bg-red-50 text-red-700' : ''}`}
+                          >
+                            Select A
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Category B */}
+                <div className="bg-emerald-50/50 p-6 rounded-xl border border-emerald-200 shadow-inner">
+                  <h3 className="font-bold text-emerald-900 mb-6 text-center text-xl">{groupData.part1.catB.name}</h3>
+                  <div className="flex flex-col gap-3 font-sans">
+                    {groupData.part1.testWords.map(word => {
+                      const isCorrect = isSubmitted && p1Answers[word] === 'B' && groupData.part1.catB.words.includes(word);
+                      const isWrong = isSubmitted && p1Answers[word] === 'B' && !groupData.part1.catB.words.includes(word);
+                      return (
+                        <div key={word + 'B'} className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm border border-slate-100">
+                          <span className="font-semibold text-slate-700 text-lg">{word}</span>
+                          <button 
+                            disabled={isSubmitted}
+                            onClick={() => setP1Answers({...p1Answers, [word]: 'B'})}
+                            className={`px-5 py-2 rounded font-bold transition ${p1Answers[word] === 'B' ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'} ${isWrong ? 'ring-2 ring-red-500 bg-red-50 text-red-700' : ''}`}
+                          >
+                            Select B
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* PART 2 */}
+            <section className="mb-14">
+              <h2 className="text-2xl font-bold text-slate-800 border-b-2 border-slate-200 pb-2 mb-4 flex items-center gap-2">
+                <span className="bg-slate-800 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm">2</span> 
+                True, False, and Fix
+              </h2>
+              <p className="text-slate-600 italic mb-6 font-sans">
+                Directions: Select True or False. If False, type the correct academic word from the Word Bank to replace the <strong>bold</strong> word.
+              </p>
+
+              <div className="space-y-6">
+                {groupData.part2.map((q, idx) => {
+                  const isAnsCorrect = isSubmitted && 
+                    ((q.ansTF === 'T' && p2Answers[idx].tf === 'T') || 
+                     (q.ansTF === 'F' && p2Answers[idx].tf === 'F' && q.fixOptions.includes(p2Answers[idx].fix.trim().toLowerCase())));
+
+                  return (
+                    <div key={idx} className={`p-6 rounded-xl border-2 ${isSubmitted ? (isAnsCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200') : 'bg-slate-50 border-slate-200'}`}>
+                      <p className="text-xl mb-5 text-slate-800 leading-relaxed">
+                        <span className="font-bold text-slate-400 mr-3">{idx + 1}.</span>
+                        {q.q}<strong>{q.bold}</strong>{q.text2}
+                      </p>
+                      
+                      <div className="flex flex-wrap items-center gap-5 font-sans">
+                        <div className="flex bg-white rounded-lg overflow-hidden border-2 border-slate-300 shadow-sm">
+                          <button 
+                            disabled={isSubmitted}
+                            onClick={() => {
+                              const newAns = [...p2Answers];
+                              newAns[idx].tf = 'T';
+                              if(q.ansTF === 'T') newAns[idx].fix = ''; 
+                              setP2Answers(newAns);
+                            }}
+                            className={`px-8 py-3 font-bold transition text-lg ${p2Answers[idx].tf === 'T' ? 'bg-slate-800 text-white' : 'hover:bg-slate-100 text-slate-600'}`}
+                          >
+                            True
+                          </button>
+                          <button 
+                            disabled={isSubmitted}
+                            onClick={() => {
+                              const newAns = [...p2Answers];
+                              newAns[idx].tf = 'F';
+                              setP2Answers(newAns);
+                            }}
+                            className={`px-8 py-3 font-bold transition text-lg border-l-2 border-slate-300 ${p2Answers[idx].tf === 'F' ? 'bg-slate-800 text-white' : 'hover:bg-slate-100 text-slate-600'}`}
+                          >
+                            False
+                          </button>
+                        </div>
+
+                        {p2Answers[idx].tf === 'F' && (
+                          <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
+                            <span className="font-bold text-slate-500 uppercase text-sm tracking-wider">Fix:</span>
+                            <input 
+                              type="text" 
+                              disabled={isSubmitted}
+                              className="academic-input w-40 sm:w-48 text-xl" 
+                              placeholder="Type word..."
+                              value={p2Answers[idx].fix}
+                              onChange={(e) => {
+                                const newAns = [...p2Answers];
+                                newAns[idx].fix = e.target.value;
+                                setP2Answers(newAns);
+                              }}
+                            />
+                          </div>
+                        )}
+
+                        {isSubmitted && !isAnsCorrect && (
+                          <div className="text-red-700 font-bold ml-auto bg-white px-4 py-2 rounded-lg shadow-sm border border-red-200 text-lg">
+                            Answer: {q.ansTF === 'T' ? 'True' : `False (Correction: ${q.fixOptions[0]})`}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* PART 3 */}
+            <section className="mb-14">
+              <h2 className="text-2xl font-bold text-slate-800 border-b-2 border-slate-200 pb-2 mb-4 flex items-center gap-2">
+                <span className="bg-slate-800 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm">3</span> 
+                Academic Analogies
+              </h2>
+              <p className="text-slate-600 italic mb-6 font-sans">
+                Directions: Complete the analogies by finding the logical relationship using the Word Bank.
+              </p>
+
+              <div className="grid gap-4 font-sans text-xl">
+                {groupData.part3.map((q, idx) => {
+                  const userAns = p3Answers[idx].trim().toLowerCase();
+                  const isCorrect = userAns === q.ans;
+                  
+                  let inputStyle = "academic-input w-48 text-xl";
+                  if (isSubmitted) {
+                    inputStyle += isCorrect ? " correct-text bg-green-50" : " incorrect-text bg-red-50";
+                  }
+
+                  return (
+                    <div key={idx} className="flex flex-wrap items-center bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm">
+                      <span className="font-bold text-slate-400 w-8">{idx + 1}.</span>
+                      <span className="text-slate-700 flex-1 font-medium">{q.q}</span>
+                      <input 
+                        type="text" 
+                        disabled={isSubmitted}
+                        className={inputStyle}
+                        value={p3Answers[idx]}
+                        onChange={(e) => {
+                          const newAns = [...p3Answers];
+                          newAns[idx] = e.target.value;
+                          setP3Answers(newAns);
+                        }}
+                      />
+                      {isSubmitted && !isCorrect && (
+                        <span className="text-green-700 font-bold ml-4 bg-green-100 px-3 py-1 rounded">
+                          {q.ans}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* PART 4 */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-slate-800 border-b-2 border-slate-200 pb-2 mb-4 flex items-center gap-2">
+                <span className="bg-slate-800 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm">4</span> 
+                Academic Paragraph Editing
+              </h2>
+              <p className="text-slate-600 italic mb-6 font-sans">
+                Directions: Read the report. Some words are crossed out because they are incorrect. Type the correct words from the Word Bank in the boxes next to them.
+              </p>
+
+              <div className="bg-amber-50 p-8 sm:p-12 rounded-xl border-2 border-amber-200 shadow-inner text-xl leading-loose text-slate-800">
+                {groupData.part4.textParts.map((textPart, idx) => {
+                  const isLast = idx === groupData.part4.textParts.length - 1;
+                  const wrongWord = groupData.part4.wrongWords[idx];
+                  const correctAns = groupData.part4.answers[idx];
+                  const userAns = p4Answers[idx]?.trim().toLowerCase();
+                  
+                  // Flexible grading matching the main checkAnswers function
+                  let isCorrect = false;
+                  if (userAns === correctAns) isCorrect = true;
+                  if (correctAns === "graph" && userAns === "chart") isCorrect = true;
+                  if (correctAns === "amount" && userAns === "quantity") isCorrect = true;
+                  if (correctAns === "property" && (userAns === "feature" || userAns === "characteristic")) isCorrect = true;
+                  if (correctAns === "affect" && (userAns === "impact" || userAns === "influence")) isCorrect = true;
+                  if (correctAns === "examine" && userAns === "analyze") isCorrect = true;
+
+                  let inputStyle = "academic-input w-36 text-center bg-white border-2 border-slate-300 rounded shadow-sm text-xl py-1";
+                  if (isSubmitted) {
+                    inputStyle += isCorrect ? " border-green-500 text-green-700 bg-green-50" : " border-red-500 text-red-700 bg-red-50";
+                  }
+
+                  return (
+                    <React.Fragment key={idx}>
+                      {textPart}
+                      {!isLast && (
+                        <span className="inline-flex items-center gap-2 mx-2 whitespace-nowrap bg-white px-2 py-1 rounded-lg shadow-sm border border-slate-200">
+                          {/* Strikethrough wrong word cleanly placed side-by-side */}
+                          <span className="text-red-500 line-through font-bold font-sans text-lg bg-red-50 px-2 rounded">
+                            {wrongWord}
+                          </span>
+                          <span>👉</span>
+                          <input 
+                            type="text" 
+                            disabled={isSubmitted}
+                            className={inputStyle}
+                            value={p4Answers[idx] || ''}
+                            onChange={(e) => { 
+                              const n = [...p4Answers]; 
+                              n[idx] = e.target.value; 
+                              setP4Answers(n); 
+                            }}
+                          />
+                        </span>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+
+              {isSubmitted && (
+                 <div className="mt-6 font-sans font-bold text-center text-lg bg-slate-50 py-3 rounded-lg border border-slate-200">
+                    <span className="text-slate-500">Expected Answers:</span> 
+                    <span className="text-green-700 ml-3">
+                      {groupData.part4.answers.map((ans, i) => `${i+1}. ${ans}`).join('  |  ')}
+                    </span>
+                 </div>
+              )}
+            </section>
+
+            {/* ACTION BUTTONS */}
+            <div className="flex justify-center mt-12 pt-8 border-t-2 border-slate-200 gap-6 font-sans">
+              {!isSubmitted ? (
+                <button 
+                  onClick={checkAnswers}
+                  className="px-12 py-5 bg-blue-700 text-white text-2xl font-bold rounded-xl shadow-lg hover:bg-blue-800 transition transform hover:-translate-y-1"
+                >
+                  Submit & Check Answers
+                </button>
+              ) : (
+                <>
+                  <button 
+                    onClick={() => {
+                      setIsSubmitted(false);
+                      setP1Answers({});
+                      setP2Answers([{ tf: null, fix: '' }, { tf: null, fix: '' }, { tf: null, fix: '' }, { tf: null, fix: '' }]);
+                      setP3Answers(['', '', '', '', '']);
+                      setP4Answers(['', '', '']);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="px-8 py-4 bg-slate-200 text-slate-700 text-xl font-bold rounded-xl shadow hover:bg-slate-300 transition"
+                  >
+                    Retry Group {groupData.groupId}
+                  </button>
+                  <button 
+                    onClick={handleNextGroup}
+                    className="px-12 py-4 bg-slate-900 text-white text-xl font-bold rounded-xl shadow-lg hover:bg-black transition flex items-center gap-3"
+                  >
+                    {currentGroupIndex < quizData.length - 1 ? `Proceed to Group ${groupData.groupId + 1} ➔` : "Finish All Groups 🎉"}
+                  </button>
+                </>
+              )}
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
